@@ -70,8 +70,8 @@ class Game(arcade.Window):
         self.physics_player = None
         
         # Camera
-        self.camera_sprites = arcade.Camera(SCREEN_WIDTH, SCREEN_HEIGHT)
-        self.camera_gui = arcade.Camera(SCREEN_WIDTH, SCREEN_HEIGHT)
+        self.camera_sprites = arcade.camera.Camera2D()
+        self.camera_gui = arcade.camera.Camera2D()
         
         # Input state
         self.left_pressed = False
@@ -109,8 +109,8 @@ class Game(arcade.Window):
         self.create_level()
         
         # Set up camera
-        self.camera_sprites = arcade.Camera(SCREEN_WIDTH, SCREEN_HEIGHT)
-        self.camera_gui = arcade.Camera(SCREEN_WIDTH, SCREEN_HEIGHT)
+        self.camera_sprites = arcade.camera.Camera2D()
+        self.camera_gui = arcade.camera.Camera2D()
     
     def create_level(self):
         """Create a simple DDNet-style level"""
@@ -227,7 +227,7 @@ class Game(arcade.Window):
             screen_center_y = 0
             
         player_centered = screen_center_x, screen_center_y
-        self.camera_sprites.move_to(player_centered, 0.1)
+        self.camera_sprites.position = player_centered
     
     def on_update(self, delta_time):
         """Movement and game logic"""
