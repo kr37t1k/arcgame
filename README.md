@@ -1,54 +1,56 @@
-# DDNet Clone - Version 0.1
+# ArcGame - Teeworlds/DDNet Analog
 
-A Python implementation of a DDNet (Teeworlds-based platformer) clone using Arcade and pymunk physics.
+ArcGame is a Python-based 2D platformer/shooter game inspired by Teeworlds and DDNet, built using the Ursina engine.
 
 ## Features
 
-- Physics-based player movement
-- Platformer mechanics with jumping and running
-- Collision detection with walls and platforms
-- Camera following the player
-- Basic level with platforms and obstacles
-- Teleporter functionality
-- Death tiles that reset player position
+- 2D platformer gameplay with physics
+- Shooting and grappling hook mechanics
+- Advanced map editor
+- DDNet map loading capability
+- Player customization (skin colors)
+- Scoreboard system
+- Multiplayer-ready architecture
 
 ## Controls
 
-- **Arrow Keys** or **WASD**: Move left/right and jump
+- **A/D**: Move left/right
 - **Space**: Jump
+- **Mouse Left Click**: Shoot
+- **Mouse Right Click**: Use hook
+- **Tab**: Toggle scoreboard
+- **Escape**: Pause menu
+- **E**: Open map editor
+- **F1**: Toggle camera mode
 
 ## Installation
 
-1. Install the required dependencies:
-```bash
-pip install -r requirements.txt
+1. Install dependencies: `pip install -r requirements.txt`
+2. Run the game: `python -m arcgame.main`
+
+## Project Structure
+
+```
+arcgame/
+├── core/           # Main game logic
+├── entities/       # Game entities (player, world, etc.)
+├── ui/            # User interface elements
+├── maps/          # Map loading and data
+├── settings/      # Configuration and customization
+├── editor/        # Map editor
+└── main.py       # Entry point
 ```
 
-2. Run the game:
-```bash
-python main.py
-```
+## Development
 
-## Current Implementation
+The game is designed to be extensible with:
 
-Version 0.1 includes:
-- Player character with physics-based movement
-- Basic level with platforms and obstacles
-- Gravity and collision detection
-- Camera that follows the player
-- Simple win condition (touching the purple teleporter)
+- Modular architecture
+- Configurable settings system
+- Customizable player skins
+- Advanced map editor
+- Support for DDNet maps
 
-## Planned Features for Future Versions
+## License
 
-- More DDNet-specific mechanics (prediction, client-side gaming)
-- Better collision shapes
-- Improved graphics and animations
-- More complex levels
-- Online multiplayer support
-- DDNet-specific items (weapons, hearts, etc.)
-
-## Technical Details
-
-- Uses Arcade for graphics and input handling
-- Uses pymunk for physics simulation
-- Implements basic platformer physics similar to DDNet
+MIT License - see LICENSE file for details.

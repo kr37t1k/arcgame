@@ -1,2 +1,5 @@
-arcade>=3.3.3
-pymunk>=6.0.0
+ursina>=5.0.0
+panda3d>=1.10.0
+numpy>=1.21.0
+pyglet>=1.5.0
+Pillow>=8.0.0
