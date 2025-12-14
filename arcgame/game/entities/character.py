@@ -1,30 +1,39 @@
-"""
-Player entity for ArcGame
-Handles player movement, physics, shooting, and hook mechanics
-"""
-
+"""DDNet Character entity - main player character with full DDNet mechanics"""
 from ursina import *
 import math
-from game.physics import DDNetPhysics, HookSystem, TuningParams
 from base.vec2 import Vec2
+from game.physics import DDNetPhysics, HookSystem, TuningParams
 
-class Player(Entity):
-    def __init__(self, position=(0, 0, 0), config=None):
+
+class Character(Entity):
+    """DDNet character with complete physics and mechanics"""
+    
+    # Hook states
+    HOOK_RETRACTED = -1
+    HOOK_IDLE = 0
+    HOOK_RETRACT_START = 1
+    HOOK_RETRACT_END = 3
+    HOOK_FLYING = 4
+    HOOK_GRABBED = 5
+    
+    def __init__(self, position=(0, 0, 0), collision_world=None, **kwargs):
         super().__init__(
             position=position,
-            collider='sphere'
+            model='quad',
+            scale=(28, 28, 1),  # DDNet character physical size
+            origin=(-0.5, -0.5),
+            **kwargs
         )
         
-        # Create the main body (circle)
+        # Visual elements
         self.body = Entity(
             parent=self,
             model='circle',
             color=color.orange,
             scale=0.6,
-            z=-0.1  # Slightly behind other elements
+            z=-0.1
         )
         
-        # Create the two feet
         self.left_foot = Entity(
             parent=self,
             model='quad',
@@ -43,57 +52,87 @@ class Player(Entity):
             origin_y=-0.5
         )
         
-        self.config = config
-        self.health = 10
-        self.max_health = 10
-        
-        # Use Vec2 for physics to match DDNet implementation
+        # Physics state
         self.pos_2d = Vec2(self.position.x, self.position.y)
         self.velocity = Vec2(0, 0)
-        
-        # Physics state
-        self.jumping = False
         self.on_ground = False
-        self.jumped = 0  # For tracking multiple jumps (air jumps)
+        self.jumped = 0  # Bit field tracking jump state
         self.jumped_total = 0  # Total air jumps performed
         self.jumps = 2  # Number of jumps allowed (2 = double jump)
         self.direction = 0  # -1 for left, 1 for right, 0 for neutral
         
+        # Health and game state
+        self.health = 10
+        self.armor = 0
+        self.alive = True
+        
+        # Weapons and equipment
+        self.active_weapon = 0  # 0=hammer, 1=gun, 2=shotgun, 3=grenade, 4=laser, 5=ninja
+        self.weapons = {
+            0: {'got': True, 'ammo': -1},   # Hammer (infinite ammo)
+            1: {'got': True, 'ammo': -1},   # Gun (infinite ammo)
+            2: {'got': False, 'ammo': 10},  # Shotgun
+            3: {'got': False, 'ammo': 10},  # Grenade
+            4: {'got': False, 'ammo': 10},  # Laser
+            5: {'got': False, 'ammo': 1},   # Ninja (special)
+        }
+        
         # DDNet physics parameters
-        self.physics = DDNetPhysics()  # Will be updated with collision world when available
         self.tuning = TuningParams()
+        self.physics = DDNetPhysics(collision_world)
+        self.collision_world = collision_world
         
         # Hook system
         self.hook_system = HookSystem(self.pos_2d, self.tuning)
+        
+        # Animation variables
+        self.foot_rotation_speed = 100
+        self.foot_angle = 0
+        self.is_moving = False
+        self.last_move_direction = 0
         
         # Shooting variables
         self.can_shoot = True
         self.shoot_cooldown = 0
         self.shoot_cooldown_max = 10  # frames
         
-        # Player appearance (for customization)
-        self.skin_colors = {
-            'body': color.orange,
-            'feet': color.gray
-        }
+        # Emote state
+        self.emote_type = -1  # -1 = normal, 0-9 = different emotes
+        self.emote_stop_tick = 0
         
-        # Animation variables for feet rotation
-        self.foot_rotation_speed = 100  # degrees per second when moving
-        self.foot_angle = 0
-        self.is_moving = False
-        self.last_move_direction = 0
+        # Time related
+        self.last_action_tick = 0
+        self.spawn_tick = 0
         
+        # Visual updates
+        self.update_visual()
+    
+    def update_visual(self):
+        """Update visual representation based on state"""
+        # Update feet animation
+        self.left_foot.rotation_z = self.foot_angle
+        self.right_foot.rotation_z = -self.foot_angle
+        
+        # Update character facing direction based on velocity
+        if self.velocity.x > 0:
+            self.scale_x = abs(self.scale_x)  # Face right
+        elif self.velocity.x < 0:
+            self.scale_x = -abs(self.scale_x)  # Face left
+    
     def update(self):
-        """Update player state"""
+        """Main update method called every frame"""
+        if not self.alive:
+            return
+            
         self.handle_physics()
-        self.handle_hook()
         self.update_cooldowns()
         self.animate_feet()
-        
+        self.update_visual()
+    
     def handle_physics(self):
-        """Handle player physics and movement using DDNet mechanics"""
+        """Handle character physics using DDNet mechanics"""
         # Apply gravity
-        self.velocity.y -= self.tuning.gravity  # Note: DDNet uses positive Y as down
+        self.velocity.y -= self.tuning.gravity
         
         # Handle input for direction
         direction = 0
@@ -135,7 +174,7 @@ class Player(Entity):
             self.is_moving = False
         
         # Handle hook physics if hook is grabbed
-        if self.hook_system.state == HookSystem.HOOK_GRABBED and self.hook_system.hooked_player == -1:
+        if self.hook_system.state == self.HOOK_GRABBED and self.hook_system.hooked_player == -1:
             # Apply hook drag physics
             hook_vec = self.hook_system.pos - self.pos_2d
             hook_dist = hook_vec.length()
@@ -162,11 +201,10 @@ class Player(Entity):
                     self.velocity = new_vel
         
         # Update position using DDNet physics system
-        # Note: In a real implementation, we'd pass a collision world to physics
         new_pos, new_vel, is_grounded = self.physics.move_character(
             self.pos_2d, 
             self.velocity,
-            size=Vec2(14.0, 14.0)  # DDNet character size
+            size=Vec2(28.0, 28.0)  # DDNet character physical size
         )
         
         # Update state
@@ -184,12 +222,11 @@ class Player(Entity):
             self.jumped_total = 0
         else:
             # Check if we just left the ground (started jumping)
-            if not self.on_ground and not self.jumping:
+            if not self.on_ground and not (self.jumped & 1):
                 self.jumped |= 1  # Set first bit (jump indicator)
-                self.jumping = True
-            
+    
     def jump(self):
-        """Make the player jump using DDNet mechanics"""
+        """Make the character jump using DDNet mechanics"""
         # Check if we can jump (on ground or have air jumps left)
         can_jump = False
         
@@ -215,55 +252,7 @@ class Player(Entity):
                 if abs(self.velocity.x) < self.tuning.air_control_speed:
                     # Add a little horizontal boost on air jump
                     self.velocity.x *= 1.1
-            
-            self.jumping = True
-            self.on_ground = False
-            
-    def move_left(self):
-        """Move player left"""
-        self.velocity.x = -self.move_speed
-        
-    def move_right(self):
-        """Move player right"""
-        self.velocity.x = self.move_speed
-        
-    def shoot(self, target_pos):
-        """Shoot at target position"""
-        if not self.can_shoot:
-            return
-            
-        # Calculate direction vector
-        direction = target_pos - self.position
-        direction.y = 0  # Ignore height difference for now
-        direction.normalize()
-        
-        # Create projectile
-        projectile = Entity(
-            parent=scene,
-            model='circle',
-            color=color.red,
-            scale=0.2,
-            position=self.position + Vec3(0, 0.3, 0),  # Position at body level
-            collider='sphere'
-        )
-        
-        # Set projectile velocity
-        projectile.velocity = direction * 15
-        
-        # Update cooldown
-        self.can_shoot = False
-        self.shoot_cooldown = self.shoot_cooldown_max
-        
-        # Projectile update function
-        def update_proj():
-            if projectile.enabled:
-                projectile.position += projectile.velocity * time.dt
-                # Destroy projectile after some time or if it goes too far
-                if abs(projectile.x - self.x) > 50 or abs(projectile.y - self.y) > 30:
-                    destroy(projectile)
-        
-        projectile.update = update_proj
-        
+    
     def use_hook(self, target_pos):
         """Use the hook to target position using DDNet mechanics"""
         # Convert target position to Vec2 for physics
@@ -276,36 +265,99 @@ class Player(Entity):
         else:
             direction = Vec2(1, 0)  # Default direction if target is same as player
         
-        # Update hook system with inputs
-        hook_input = True  # Since we're calling this method, hook is being used
-        self.hook_system.update(self.pos_2d, direction, hook_input, self.on_ground)
-        
-        # Update hook visual if needed
-        # In a real implementation, we'd update the hook entity based on the hook system state
-        
-    def handle_hook(self):
-        """Handle hook mechanics using DDNet system"""
-        # Get mouse position for hook direction
-        if mouse.world_point:
-            target_2d = Vec2(mouse.world_point.x, mouse.world_point.y)
-            direction = target_2d - self.pos_2d
-            if direction.length() > 0:
-                direction = direction.normalize()
-            else:
-                direction = Vec2(1, 0)
-        else:
-            # If no mouse world point, use a default direction based on player facing
-            direction = Vec2(self.direction if self.direction != 0 else 1, 0)
-        
         # Determine if hook button is being pressed
         hook_input = mouse.right  # Assuming right mouse button for hook
         
         # Update hook system
         self.hook_system.update(self.pos_2d, direction, hook_input, self.on_ground)
+    
+    def fire_weapon(self):
+        """Fire the currently active weapon"""
+        if not self.can_shoot:
+            return
+            
+        weapon = self.active_weapon
+        if not self.weapons[weapon]['got']:
+            return  # Don't have this weapon
+            
+        # Check ammo if not infinite (-1)
+        if self.weapons[weapon]['ammo'] != -1 and self.weapons[weapon]['ammo'] <= 0:
+            return  # Out of ammo
+            
+        # Apply weapon cooldown
+        self.can_shoot = False
+        self.shoot_cooldown = self.get_weapon_fire_delay(weapon)
         
-        # Update hook visuals based on hook system state
-        # In a real implementation, we'd create/update hook entity visuals here
-                    
+        # Consume ammo if not infinite
+        if self.weapons[weapon]['ammo'] != -1:
+            self.weapons[weapon]['ammo'] -= 1
+    
+    def get_weapon_fire_delay(self, weapon_type):
+        """Get fire delay for weapon type"""
+        if weapon_type == 0:  # Hammer
+            return self.tuning.hammer_fire_delay
+        elif weapon_type == 1:  # Gun
+            return self.tuning.gun_fire_delay
+        elif weapon_type == 2:  # Shotgun
+            return self.tuning.shotgun_fire_delay
+        elif weapon_type == 3:  # Grenade
+            return self.tuning.grenade_fire_delay
+        elif weapon_type == 4:  # Laser
+            return self.tuning.laser_fire_delay
+        elif weapon_type == 5:  # Ninja
+            return self.tuning.ninja_fire_delay
+        return 10  # Default delay
+    
+    def set_weapon(self, weapon_type):
+        """Set the active weapon"""
+        if weapon_type in self.weapons and self.weapons[weapon_type]['got']:
+            self.active_weapon = weapon_type
+    
+    def give_weapon(self, weapon_type, ammo=10):
+        """Give a weapon to the character"""
+        if weapon_type in self.weapons:
+            self.weapons[weapon_type]['got'] = True
+            if self.weapons[weapon_type]['ammo'] != -1:
+                self.weapons[weapon_type]['ammo'] += ammo
+    
+    def take_damage(self, amount, from_entity=None, weapon_type=None):
+        """Take damage and update health"""
+        if not self.alive:
+            return
+            
+        # Apply damage to armor first, then health
+        if self.armor > 0:
+            armor_damage = min(self.armor, amount)
+            self.armor -= armor_damage
+            remaining_damage = amount - armor_damage
+        else:
+            remaining_damage = amount
+            
+        if remaining_damage > 0:
+            self.health -= remaining_damage
+            if self.health <= 0:
+                self.die(from_entity, weapon_type)
+    
+    def die(self, killer=None, weapon=None):
+        """Handle character death"""
+        self.alive = False
+        self.health = 0
+        # Reset to spawn position
+        self.pos_2d = Vec2(0, 0)  # Should be set to actual spawn
+        self.position = Vec3(0, 0, self.position.z)
+        self.velocity = Vec2(0, 0)
+        self.on_ground = False
+        self.jumped = 0
+        self.jumped_total = 0
+    
+    def respawn(self):
+        """Respawn the character"""
+        self.alive = True
+        self.health = 10
+        self.armor = 0
+        # Reset other states as needed
+        self.spawn_tick = time.time()
+    
     def animate_feet(self):
         """Animate feet rotation when moving"""
         if self.is_moving:
@@ -332,44 +384,18 @@ class Player(Entity):
             # Apply rotation to feet
             self.left_foot.rotation_z = self.foot_angle
             self.right_foot.rotation_z = -self.foot_angle
-
+    
     def update_cooldowns(self):
         """Update cooldown timers"""
         if not self.can_shoot:
             self.shoot_cooldown -= 1
             if self.shoot_cooldown <= 0:
                 self.can_shoot = True
-                
-    def take_damage(self, amount):
-        """Take damage and update health"""
-        self.health -= amount
-        if self.health <= 0:
-            self.die()
-            
-    def die(self):
-        """Handle player death"""
-        self.health = self.max_health
-        self.position = Vec3(0, 5, 0)  # Reset to spawn
-        self.velocity = Vec3(0, 0, 0)
-        
-        # Clean up hook if active
-        if self.hook_entity:
-            destroy(self.hook_entity)
-            self.hook_entity = None
-        self.hook_active = False
-        self.hook_connected = False
-        self.hook_pos = None
-        
-    def heal(self, amount):
-        """Heal the player"""
-        self.health = min(self.max_health, self.health + amount)
-        
+    
     def update_skin(self, body_color=None, feet_color=None):
-        """Update player skin colors"""
+        """Update character skin colors"""
         if body_color:
-            self.skin_colors['body'] = body_color
             self.body.color = body_color
         if feet_color:
-            self.skin_colors['feet'] = feet_color
             self.left_foot.color = feet_color
             self.right_foot.color = feet_color

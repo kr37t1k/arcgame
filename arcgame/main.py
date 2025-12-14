@@ -1,5 +1,5 @@
 """
-ArcGame - A Teeworlds/DDNet Analog Game
+DDNet Python Implementation
 Main entry point for the game
 """
 
@@ -10,16 +10,12 @@ import os
 # Add the project root to the path so we can import modules
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from core.game import ArcGame
-from settings.config import GameConfig
+from ddnet_game import DDNetGame
 
 def main():
-    # Initialize the game configuration
-    config = GameConfig()
-    
-    # Create and run the game
-    app = Ursina(borderless=False, fullscreen=False, title="ArcGame")
-    game = ArcGame(config)
+    # Create and run the DDNet game
+    app = Ursina(borderless=False, fullscreen=False, title="DDNet Python Implementation")
+    game = DDNetGame()
     app.run()
 
 if __name__ == "__main__":
