@@ -37,12 +37,14 @@ def main():
     # Try to run the game if possible
     try:
         sys.path.insert(0, '/workspace')
-        from arcgame.main import main as game_main
+        from arcgame.client import main as game_main
         print("Attempting to start the game...")
         game_main()
     except ImportError as e:
         print(f"Could not import the game: {e}")
         print("Make sure you're in the correct directory and have installed dependencies.")
+        print("To install dependencies:")
+        print("pip install pygame")
     except Exception as e:
         print(f"Could not start the game: {e}")
         print("This may be because you're running in a headless environment without graphics support.")
