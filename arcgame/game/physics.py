@@ -271,7 +271,6 @@ class TuningParams:
         self.ninja_fire_delay = 800
         self.hammer_hit_fire_delay = 320
 
-
 class HookSystem:
     """DDNet hook system mechanics"""
     def __init__(self, character_pos, tuning_params):
@@ -388,7 +387,7 @@ class PhysicsWorld:
 
 # Example usage and testing
 if __name__ == "__main__":
-    from ..base.collision import TileMap
+    from arcgame.base.collision import TileMap
     
     # Create a simple test scenario
     tile_map = TileMap(20, 15)
@@ -413,3 +412,7 @@ if __name__ == "__main__":
     char_physics.update_input({'right': True})
     char_physics.update(0.1)
     print(f"After moving right: {char_physics.pos}")
+
+    # Test tuning class for ex
+    tune = TuningParams()
+    print(tune.laser_reach) # random thing

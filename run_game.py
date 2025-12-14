@@ -13,9 +13,6 @@ def main():
     print("A Python-based 2D platformer/shooter game inspired by Teeworlds and DDNet.")
     print("")
     print("Requirements:")
-    print("- Python 3.7 or higher")
-    print("- Ursina engine")
-    print("- Panda3D")
     print("")
     print("To install dependencies:")
     print("pip install -r requirements.txt")
@@ -36,17 +33,17 @@ def main():
     
     # Try to run the game if possible
     try:
-        sys.path.insert(0, '/workspace')
+        sys.path.insert(0, './')
         # Try pygame implementation first
         try:
             import pygame
             print("Attempting to start Pygame implementation...")
             from arcgame.ddnet_pygame_main import main as pygame_main
             pygame_main()
-        except ImportError:
-            print("Pygame not available, trying Ursina implementation...")
-            from arcgame.client import main as game_main
-            game_main()
+        except Exception as exc:
+            print(f"Pygame not available, try again {exc}")
+            # from arcgame.client import main as game_main
+            # game_main()
     except ImportError as e:
         print(f"Could not import the game: {e}")
         print("Make sure you're in the correct directory and have installed dependencies.")

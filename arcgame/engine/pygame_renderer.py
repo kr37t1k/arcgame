@@ -1,7 +1,7 @@
 """Pygame renderer for DDNet implementation"""
 import pygame
 import math
-from ..base.vec2 import Vec2
+from arcgame.base.vec2 import Vec2
 
 
 class PygameRenderer:
@@ -76,7 +76,7 @@ class PygameRenderer:
     
     def screen_to_world(self, screen_pos):
         """Convert screen coordinates to world coordinates"""
-        return Vec2(screen_pos[0] + self.camera_pos.x, screen_pos[1] + self.camera_pos.y)
+        return Vec2(screen_pos.x + self.camera_pos.x, screen_pos.x + self.camera_pos.y)
     
     def render_world(self, world):
         """Render the game world"""

@@ -4,7 +4,7 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from base.vec2 import Vec2
 from base.collision import CollisionWorld
-from config import TUNING_DEFAULTS
+from game.physics import TuningParams
 from enum import IntEnum
 
 class HookState(IntEnum):
@@ -112,7 +112,7 @@ class CharacterPhysics:
         self.m_LiveFrozen = False
         
         # Tuning parameters (default values from DDNet)
-        self.m_Tuning = TUNING_DEFAULTS.copy()
+        self.m_Tuning:TuningParams = TuningParams()
         
     def init(self, world, collision, teams=None):
         """Initialize character with world and collision references"""
@@ -190,11 +190,11 @@ class CharacterPhysics:
         
         target_direction = (Vec2(self.m_Input['m_TargetX'], self.m_Input['m_TargetY'])).normalize()
         
-        self.m_Vel.y += self.m_Tuning['gravity']
+        self.m_Vel.y += self.m_Tuning.gravity
         
-        max_speed = self.m_Tuning['ground_control_speed'] if grounded else self.m_Tuning['air_control_speed']
-        accel = self.m_Tuning['ground_control_accel'] if grounded else self.m_Tuning['air_control_accel']
-        friction = self.m_Tuning['ground_friction'] if grounded else self.m_Tuning['air_friction']
+        max_speed = self.m_Tuning.ground_control_speed if grounded else self.m_Tuning.air_control_speed
+        accel = self.m_Tuning.ground_control_accel if grounded else self.m_Tuning.air_control_accel
+        friction = self.m_Tuning.ground_friction if grounded else self.m_Tuning.air_friction
         
         # Handle input
         if use_input:
@@ -213,7 +213,7 @@ class CharacterPhysics:
                 if not (self.m_Jumped & 1):
                     if grounded and (not (self.m_Jumped & 2) or self.m_Jumps != 0):
                         self.m_TriggeredEvents |= CoreEvent.COREEVENT_GROUND_JUMP
-                        self.m_Vel.y = -self.m_Tuning['ground_jump_impulse']
+                        self.m_Vel.y = -self.m_Tuning.ground_jump_impulse
                         if self.m_Jumps > 1:
                             self.m_Jumped |= 1
                         else:
@@ -221,7 +221,7 @@ class CharacterPhysics:
                         self.m_JumpedTotal = 0
                     elif not (self.m_Jumped & 2):
                         self.m_TriggeredEvents |= CoreEvent.COREEVENT_AIR_JUMP
-                        self.m_Vel.y = -self.m_Tuning['air_jump_impulse']
+                        self.m_Vel.y = -self.m_Tuning.air_jump_impulse
                         self.m_Jumped |= 3
                         self.m_JumpedTotal += 1
             else:
@@ -234,7 +234,7 @@ class CharacterPhysics:
                     self.m_HookPos = self.m_Pos + target_direction * 28.0 * 1.5  # PhysicalSize() * 1.5
                     self.m_HookDir = target_direction
                     self.set_hooked_player(-1)
-                    self.m_HookTick = 50 * (1.25 - self.m_Tuning['hook_duration'])  # SERVER_TICK_SPEED * (1.25 - hook_duration)
+                    self.m_HookTick = 50 * (1.25 - self.m_Tuning.hook_duration)  # SERVER_TICK_SPEED * (1.25 - hook_duration)
                     self.m_TriggeredEvents |= CoreEvent.COREEVENT_HOOK_LAUNCH
             else:
                 self.set_hooked_player(-1)
@@ -270,17 +270,17 @@ class CharacterPhysics:
             if self.m_NewHook:
                 hook_base = self.m_HookTeleBase
             
-            new_pos = self.m_HookPos + self.m_HookDir * self.m_Tuning['hook_fire_speed']
-            if (new_pos - hook_base).length() > self.m_Tuning['hook_length']:
+            new_pos = self.m_HookPos + self.m_HookDir * self.m_Tuning.hook_fire_speed
+            if (new_pos - hook_base).length() > self.m_Tuning.hook_length:
                 self.m_HookState = HookState.HOOK_RETRACT_START
-                new_pos = hook_base + (new_pos - hook_base).normalize() * self.m_Tuning['hook_length']
+                new_pos = hook_base + (new_pos - hook_base).normalize() * self.m_Tuning.hook_length
                 self.m_Reset = True
             
             # Check against ground (simplified)
             # In real implementation, this would use IntersectLineTeleHook
             
             # Check against other players
-            if not self.m_HookHitDisabled and self.m_pWorld and self.m_Tuning['player_hooking']:
+            if not self.m_HookHitDisabled and self.m_pWorld and self.m_Tuning.player_hooking:
                 distance = 0.0
                 for i in range(64):  # MAX_CLIENTS (simplified)
                     if i >= len(self.m_pWorld.m_apCharacters):
@@ -318,7 +318,7 @@ class CharacterPhysics:
             
             # Don't do this hook routine when we are already hooked to a player
             if self.m_HookedPlayer == -1 and (self.m_HookPos - self.m_Pos).length() > 46.0:
-                hook_vel = (self.m_HookPos - self.m_Pos).normalize() * self.m_Tuning['hook_drag_accel']
+                hook_vel = (self.m_HookPos - self.m_Pos).normalize() * self.m_Tuning.hook_drag_accel
                 # The hook has more power to drag you up then down
                 if hook_vel.y > 0:
                     hook_vel.y *= 0.3
@@ -333,7 +333,7 @@ class CharacterPhysics:
                 
                 # Check if we are under the legal limit for the hook
                 new_vel_length = new_vel.length()
-                if new_vel_length < self.m_Tuning['hook_drag_speed'] or new_vel_length < self.m_Vel.length():
+                if new_vel_length < self.m_Tuning.hook_drag_speed or new_vel_length < self.m_Vel.length():
                     self.m_Vel = new_vel  # Apply
             
             # Release hook (max default hook time is 1.25 s)
@@ -370,7 +370,7 @@ class CharacterPhysics:
                     dir = (self.m_Pos - p_char_core.m_Pos).normalize()
                     
                     can_collide = (self.m_Super or p_char_core.m_Super) or (
-                        not self.m_CollisionDisabled and not p_char_core.m_CollisionDisabled and self.m_Tuning['player_collision']
+                        not self.m_CollisionDisabled and not p_char_core.m_CollisionDisabled and self.m_Tuning.player_collision
                     )
                     
                     if can_collide and distance < 28.0 * 1.25:  # PhysicalSize() * 1.25
@@ -385,10 +385,10 @@ class CharacterPhysics:
                         self.m_Vel *= 0.85
                     
                     # Handle hook influence
-                    if not self.m_HookHitDisabled and self.m_HookedPlayer == i and self.m_Tuning['player_hooking']:
+                    if not self.m_HookHitDisabled and self.m_HookedPlayer == i and self.m_Tuning.player_hooking:
                         if distance > 28.0 * 1.50:  # PhysicalSize() * 1.50
-                            hook_accel = self.m_Tuning['hook_drag_accel'] * (distance / self.m_Tuning['hook_length'])
-                            drag_speed = self.m_Tuning['hook_drag_speed']
+                            hook_accel = self.m_Tuning.hook_drag_accel * (distance / self.m_Tuning.hook_length)
+                            drag_speed = self.m_Tuning.hook_drag_speed
                             
                             # Add force to the hooked player
                             temp_x = self.saturated_add(-drag_speed, drag_speed, p_char_core.m_Vel.x, hook_accel * dir.x * 1.5)
@@ -410,8 +410,8 @@ class CharacterPhysics:
     def move(self):
         """Move character with collision handling - matches DDNet's Move() function"""
         # Calculate velocity ramp
-        ramp_value = self.velocity_ramp(self.m_Vel.length() * 50, self.m_Tuning['velramp_start'], 
-                                       self.m_Tuning['velramp_range'], self.m_Tuning['velramp_curvature'])
+        ramp_value = self.velocity_ramp(self.m_Vel.length() * 50, self.m_Tuning.velramp_start,
+                                       self.m_Tuning.velramp_range, self.m_Tuning.velramp_curvature)
         
         self.m_Vel.x = self.m_Vel.x * ramp_value
         
@@ -454,7 +454,7 @@ class CharacterPhysics:
         self.m_Vel.x = self.m_Vel.x * (1.0 / ramp_value)
         
         # Player collision check (simplified)
-        if self.m_pWorld and (self.m_Super or (self.m_Tuning['player_collision'] and not self.m_CollisionDisabled and not self.m_Solo)):
+        if self.m_pWorld and (self.m_Super or (self.m_Tuning.player_collision and not self.m_CollisionDisabled and not self.m_Solo)):
             distance = (new_pos - self.m_Pos).length()
             if distance > 0:
                 end = int(distance) + 1

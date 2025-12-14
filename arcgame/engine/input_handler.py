@@ -1,6 +1,6 @@
 """Input handler for DDNet Pygame implementation"""
 import pygame
-from ..base.vec2 import Vec2
+from arcgame.base.vec2 import Vec2
 
 
 class InputHandler:

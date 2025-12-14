@@ -1,11 +1,11 @@
 """Main game loop for DDNet Pygame implementation"""
 import pygame
 import sys
-from .game.world import World
-from .game.character import CharacterPhysics
-from .engine.pygame_renderer import PygameRenderer
-from .engine.input_handler import InputHandler
-from .base.vec2 import Vec2
+from game.world import World
+from game.character import CharacterPhysics
+from engine.pygame_renderer import PygameRenderer
+from engine.input_handler import InputHandler
+from base.vec2 import Vec2
 
 
 class DDNetGame:
@@ -27,7 +27,7 @@ class DDNetGame:
         self.clock = pygame.time.Clock()
         
         # Create world
-        self.world.load_ddnet_map("test_map")  # This will use the default simple map
+        self.world.load_ddnet_map("maps/dm7.map")  # This will use the default simple map
         
     def create_test_characters(self):
         """Create test characters"""

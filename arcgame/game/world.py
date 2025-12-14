@@ -1,7 +1,7 @@
 """Game world and map handling for DDNet Pygame implementation"""
-from ..base.collision import TileMap, CollisionWorld
-from ..base.vec2 import Vec2
-from ..config import *
+from arcgame.base.collision import TileMap, CollisionWorld
+from arcgame.base.vec2 import Vec2
+from arcgame.config import *
 import os
 
 
