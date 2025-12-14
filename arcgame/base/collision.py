@@ -1,5 +1,6 @@
 """Collision detection system matching DDNet's tile-based collision system"""
 from .vec2 import Vec2
+import math
 
 
 class TileMap:
@@ -76,22 +77,15 @@ class CollisionWorld:
         if not self.map:
             return False
             
-        # Check a few points around the circle
-        for angle in range(0, 360, 45):  # Check every 45 degrees
-            rad = angle * 3.14159 / 180
-            point = Vec2(
-                center.x + radius * (angle == 0 or angle == 180),  # Rough approximation
-                center.y + radius * (angle == 90 or angle == 270)   # More precise later
+        # Check multiple points around the circle
+        for i in range(8):
+            a = 2 * math.pi * i / 8
+            p = Vec2(
+                center.x + radius * math.cos(a),
+                center.y + radius * math.sin(a)
             )
-            # Better approach: check multiple points around the circle
-            for i in range(8):
-                a = 2 * 3.14159 * i / 8
-                p = Vec2(
-                    center.x + radius * math.cos(a),
-                    center.y + radius * math.sin(a)
-                )
-                if self.collide_point(p):
-                    return True
+            if self.collide_point(p):
+                return True
         return False
     
     def move_point(self, pos, delta):
@@ -120,36 +114,46 @@ class CollisionWorld:
         """Move a box with collision resolution - similar to DDNet's collision system"""
         if not self.map:
             return pos + velocity, velocity
-        
+
         new_pos = Vec2(pos.x, pos.y)
         
-        # Move along X axis first
-        if velocity.x != 0:
-            step = 1 if velocity.x > 0 else -1
-            for _ in range(int(abs(velocity.x))):
-                test_pos = Vec2(new_pos.x + step, new_pos.y)
-                if not self.collide_rect(test_pos, size):
-                    new_pos.x += step
-                else:
-                    break
+        # Calculate how many steps we need to take for accurate collision
+        # This prevents tunneling through thin walls
+        distance = max(abs(velocity.x), abs(velocity.y))
+        steps = max(1, int(distance))
         
-        # Then move along Y axis
-        if velocity.y != 0:
-            step = 1 if velocity.y > 0 else -1
-            for _ in range(int(abs(velocity.y))):
-                test_pos = Vec2(new_pos.x, new_pos.y + step)
-                if not self.collide_rect(test_pos, size):
-                    new_pos.y += step
-                else:
-                    break
+        # Fraction of velocity to move per step
+        fraction_x = velocity.x / steps
+        fraction_y = velocity.y / steps
         
-        # Calculate remaining velocity
+        for step in range(steps):
+            # Try X movement first
+            test_pos_x = Vec2(new_pos.x + fraction_x, new_pos.y)
+            if not self.collide_rect(test_pos_x, size):
+                new_pos.x += fraction_x
+            else:
+                # X collision - stop x movement
+                break
+            
+            # Then try Y movement
+            test_pos_y = Vec2(new_pos.x, new_pos.y + fraction_y)
+            if not self.collide_rect(test_pos_y, size):
+                new_pos.y += fraction_y
+            else:
+                # Y collision - stop y movement
+                break
+        
+        # Calculate remaining velocity based on how far we actually moved
         actual_delta = new_pos - pos
-        remaining_velocity = Vec2(
-            velocity.x if abs(actual_delta.x) < abs(velocity.x) else 0,
-            velocity.y if abs(actual_delta.y) < abs(velocity.y) else 0
-        )
+        remaining_velocity = Vec2(velocity.x, velocity.y)
         
+        # If we hit a wall in X direction, stop X velocity
+        if abs(actual_delta.x) < abs(velocity.x * steps) and steps > 0:
+            remaining_velocity.x = 0
+        # If we hit a wall in Y direction, stop Y velocity  
+        if abs(actual_delta.y) < abs(velocity.y * steps) and steps > 0:
+            remaining_velocity.y = 0
+            
         return new_pos, remaining_velocity
 
 
@@ -186,8 +190,6 @@ def clamp_to_map_bounds(pos, map_width, map_height, tile_size=32):
 
 
 if __name__ == "__main__":
-    import math  # Import here since it's used in collide_circle
-    
     # Test collision system
     tile_map = TileMap(20, 15)  # 20x15 tiles
     tile_map.set_tile(100, 100, 1)  # Set a tile at (100, 100) to solid
