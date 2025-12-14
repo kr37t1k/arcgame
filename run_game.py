@@ -37,9 +37,16 @@ def main():
     # Try to run the game if possible
     try:
         sys.path.insert(0, '/workspace')
-        from arcgame.client import main as game_main
-        print("Attempting to start the game...")
-        game_main()
+        # Try pygame implementation first
+        try:
+            import pygame
+            print("Attempting to start Pygame implementation...")
+            from arcgame.ddnet_pygame_main import main as pygame_main
+            pygame_main()
+        except ImportError:
+            print("Pygame not available, trying Ursina implementation...")
+            from arcgame.client import main as game_main
+            game_main()
     except ImportError as e:
         print(f"Could not import the game: {e}")
         print("Make sure you're in the correct directory and have installed dependencies.")
