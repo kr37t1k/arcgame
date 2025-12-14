@@ -1,10 +1,11 @@
 """Character physics matching DDNet's CCharacterCore"""
-from ..base.vec2 import Vec2
-from ..base.collision import CollisionWorld
-from ..config import *
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from base.vec2 import Vec2
+from base.collision import CollisionWorld
+from config import TUNING_DEFAULTS
 from enum import IntEnum
-
-# Where is TUNING_DEFAULTS defined? TODO: /*/*/*///*/*/*/***/*/*/*/*/*/*/*/*
 
 class HookState(IntEnum):
     HOOK_RETRACTED = -1

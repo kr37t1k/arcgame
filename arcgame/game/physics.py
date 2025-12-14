@@ -1,6 +1,9 @@
 """DDNet-compatible physics engine for character movement and hook mechanics"""
-from ..base.vec2 import Vec2
-from ..base.collision import CollisionWorld
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from base.vec2 import Vec2
+from base.collision import CollisionWorld
 
 
 class CharacterPhysics:
@@ -203,6 +206,150 @@ class CharacterPhysics:
         if self.on_ground:
             self.jumped = [False, False]
             self.double_jumped = False
+
+
+class TuningParams:
+    """DDNet tuning parameters matching those from tuning.h"""
+    def __init__(self):
+        # Physics tuning parameters
+        self.ground_control_speed = 10.0
+        self.ground_control_accel = 100.0 / 50  # SERVER_TICK_SPEED = 50
+        self.ground_friction = 0.5
+        self.ground_jump_impulse = 13.2
+        self.air_jump_impulse = 12.0
+        self.air_control_speed = 250.0 / 50
+        self.air_control_accel = 1.5
+        self.air_friction = 0.95
+        self.hook_length = 380.0
+        self.hook_fire_speed = 80.0
+        self.hook_drag_accel = 3.0
+        self.hook_drag_speed = 15.0
+        self.gravity = 0.5
+        
+        # Velocity ramp
+        self.velramp_start = 550
+        self.velramp_range = 2000
+        self.velramp_curvature = 1.4
+        
+        # Weapon tuning
+        self.gun_curvature = 1.25
+        self.gun_speed = 2200.0
+        self.gun_lifetime = 2.0
+        
+        self.shotgun_curvature = 1.25
+        self.shotgun_speed = 2750.0
+        self.shotgun_speeddiff = 0.8
+        self.shotgun_lifetime = 0.20
+        
+        self.grenade_curvature = 7.0
+        self.grenade_speed = 1000.0
+        self.grenade_lifetime = 2.0
+        
+        self.laser_reach = 800.0
+        self.laser_bounce_delay = 150
+        self.laser_bounce_num = 1000
+        self.laser_bounce_cost = 0
+        self.laser_damage = 5
+        
+        # Game settings
+        self.player_collision = 1
+        self.player_hooking = 1
+        
+        # DDNet specific
+        self.jetpack_strength = 400.0
+        self.shotgun_strength = 10.0
+        self.explosion_strength = 6.0
+        self.hammer_strength = 1.0
+        self.hook_duration = 1.25
+        
+        # Fire delays (in milliseconds)
+        self.hammer_fire_delay = 125
+        self.gun_fire_delay = 125
+        self.shotgun_fire_delay = 500
+        self.grenade_fire_delay = 500
+        self.laser_fire_delay = 800
+        self.ninja_fire_delay = 800
+        self.hammer_hit_fire_delay = 320
+
+
+class HookSystem:
+    """DDNet hook system mechanics"""
+    def __init__(self, character_pos, tuning_params):
+        self.pos = character_pos.copy()
+        self.tuning = tuning_params
+        # Hook states (matching DDNet values)
+        self.HOOK_RETRACTED = -1
+        self.HOOK_IDLE = 0
+        self.HOOK_RETRACT_START = 1
+        self.HOOK_RETRACT_END = 3
+        self.HOOK_FLYING = 4
+        self.HOOK_GRABBED = 5
+        self.state = self.HOOK_RETRACTED
+        self.dir = Vec2(0, 0)
+        self.tick = 0
+        self.hooked_player = -1
+        
+    def update(self, character_pos, direction, hook_input, on_ground):
+        """Update hook state based on input and conditions"""
+        self.dir = direction
+        
+        if hook_input:
+            if self.state == self.HOOK_IDLE:
+                # Launch hook
+                self.state = self.HOOK_FLYING
+                self.pos = character_pos + direction * 28.0 * 1.5  # Physical size * 1.5
+                self.tick = int(50 * (1.25 - self.tuning.hook_duration))  # SERVER_TICK_SPEED * (1.25 - hook_duration)
+        else:
+            if self.state == self.HOOK_GRABBED:
+                # Release hook
+                self.hooked_player = -1
+            self.state = self.HOOK_IDLE
+            self.pos = character_pos
+
+
+class DDNetPhysics:
+    """DDNet physics system for character movement"""
+    def __init__(self, collision_world=None):
+        self.collision_world = collision_world
+    
+    def move_character(self, pos, vel, size):
+        """Move character with collision detection"""
+        if not self.collision_world:
+            # If no collision world, just apply velocity
+            new_pos = pos + vel * 0.016  # Assume ~60fps update
+            return new_pos, vel, False  # Return new position, velocity, and grounded status
+        
+        # Simple collision response
+        # Calculate new position with velocity
+        new_pos = pos + vel * 0.016  # Time step approximation
+        
+        # Check collision at new position
+        # This is a simplified collision check - in reality would check each axis separately
+        half_size = size / 2
+        grounded = False
+        
+        # Check for ground collision (simplified)
+        if self.collision_world.collide_point(Vec2(new_pos.x, new_pos.y + half_size.y + 1)):
+            grounded = True
+            new_pos.y = new_pos.y - (new_pos.y % 16) + 1  # Snap to grid, simplified
+            if vel.y > 0:  # If moving down and hit ground, stop vertical movement
+                vel.y = 0
+        
+        # Check for wall collision
+        if self.collision_world.collide_point(Vec2(new_pos.x + half_size.x, new_pos.y)):
+            new_pos.x = pos.x  # Revert x movement
+            vel.x = 0
+            
+        if self.collision_world.collide_point(Vec2(new_pos.x - half_size.x, new_pos.y)):
+            new_pos.x = pos.x  # Revert x movement
+            vel.x = 0
+        
+        # Check if hitting ceiling
+        if self.collision_world.collide_point(Vec2(new_pos.x, new_pos.y - half_size.y)):
+            new_pos.y = pos.y  # Revert y movement
+            vel.y = 0
+            
+        return new_pos, vel, grounded
 
 
 class PhysicsWorld:
