@@ -1,6 +1,9 @@
 """Player entity for the DDNet clone"""
-from ...base.vec2 import Vec2
-from ..physics import CharacterPhysics
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+from base.vec2 import Vec2
+from game.physics import CharacterPhysics
 
 
 class Player:

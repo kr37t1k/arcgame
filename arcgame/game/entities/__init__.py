@@ -1,7 +1,6 @@
 """DDNet game entities"""
 from .character import Character
 from .projectile import Projectile
-from .pickup import Pickup
-from .laser import Laser
+from .player import Player
 
-__all__ = ['Character', 'Projectile', 'Pickup', 'Laser']
+__all__ = ['Character', 'Projectile', 'Player']
