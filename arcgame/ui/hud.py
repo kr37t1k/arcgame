@@ -61,7 +61,7 @@ class HUD(Entity):
             text='ArcGame Player',
             scale=1.2,
             position=(-0.68, 0.48),
-            color=color.light_blue
+            color=color.cyan
         )
         
         # Create pause menu (initially hidden)
