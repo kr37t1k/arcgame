@@ -1,0 +1,333 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<c2eventsheet>
+    <!--All the 'name' attributes are ignored by Construct 2 - they are there for readability only.-->
+    <name>Event sheet 1</name>
+    <events>
+        <event-block sid="195043473242132">
+            <conditions>
+                <condition id="-4" name="Trigger once while true" sid="129040851767740" type="System" />
+            </conditions>
+            <actions>
+                <action behavior="Physics" id="23" name="Enable/disable collisions" sid="161776209220449" type="Grenade">
+                    <param id="0" name="Object">Player</param>
+                    <param id="1" name="State">0</param>
+                </action>
+                <action id="11" name="Set collisions enabled" sid="329958702834818" type="Explosion">
+                    <param id="0" name="Collisions">0</param>
+                </action>
+            </actions>
+        </event-block>
+        <event-block sid="158500281819453">
+            <conditions>
+                <condition id="-1" name="Every tick" sid="507401761401869" type="System" />
+            </conditions>
+            <actions>
+                <action id="-10" name="Set value" sid="309357049232652" type="Player">
+                    <param id="0" name="Instance variable">PlayerX</param>
+                    <param id="1" name="Value">Player.X</param>
+                </action>
+                <action id="-10" name="Set value" sid="641388979554218" type="Player">
+                    <param id="0" name="Instance variable">PlayerY</param>
+                    <param id="1" name="Value">Player.Y</param>
+                </action>
+                <action id="-10" name="Set value" sid="366041867276460" type="Player">
+                    <param id="0" name="Instance variable">PlayerMouseX</param>
+                    <param id="1" name="Value">Mouse.X</param>
+                </action>
+                <action id="-10" name="Set value" sid="546374068705454" type="Player">
+                    <param id="0" name="Instance variable">PlayerMouseY</param>
+                    <param id="1" name="Value">Mouse.Y</param>
+                </action>
+                <action id="-22" name="Set angle toward position" sid="242862259208860" type="PlayerLaser">
+                    <param id="0" name="X">Player.PlayerMouseX</param>
+                    <param id="1" name="Y">Player.PlayerMouseY</param>
+                </action>
+                <action id="-10" name="Set value" sid="806614017426221" type="Player">
+                    <param id="0" name="Instance variable">PlayerAngle</param>
+                    <param id="1" name="Value">PlayerLaser.Angle</param>
+                </action>
+                <action id="-4" name="Set position to another object" sid="140150409586024" type="PlayerLaser">
+                    <param id="0" name="Object">Player</param>
+                    <param id="1" name="Image point (optional)">1</param>
+                </action>
+            </actions>
+        </event-block>
+        <comment>Use the down arrow to allow the player to deliberately drop down through a jump-thru platform.</comment>
+        <event-block sid="149238832864767">
+            <conditions>
+                <condition id="0" name="On key pressed" sid="910991189090750" type="Keyboard">
+                    <param id="0" name="Key">40</param>
+                </condition>
+            </conditions>
+            <actions>
+                <action behavior="Platform" id="12" name="Fall through" sid="965831962526703" type="Player" />
+            </actions>
+        </event-block>
+        <comment>Allow WASD as alternate controls to arrow keys.</comment>
+        <event-block sid="519001103548424">
+            <conditions>
+                <condition id="2" name="Key is down" sid="244118697113349" type="Keyboard">
+                    <param id="0" name="Key">87</param>
+                </condition>
+            </conditions>
+            <actions>
+                <action behavior="Platform" id="7" name="Simulate control" sid="987026167879506" type="Player">
+                    <param id="0" name="Control">2</param>
+                </action>
+            </actions>
+        </event-block>
+        <event-block sid="216777715518375">
+            <conditions>
+                <condition id="2" name="Key is down" sid="715989652834631" type="Keyboard">
+                    <param id="0" name="Key">65</param>
+                </condition>
+            </conditions>
+            <actions>
+                <action behavior="Platform" id="7" name="Simulate control" sid="946244244894390" type="Player">
+                    <param id="0" name="Control">0</param>
+                </action>
+            </actions>
+        </event-block>
+        <event-block sid="442346063158291">
+            <conditions>
+                <condition id="2" name="Key is down" sid="799332292128491" type="Keyboard">
+                    <param id="0" name="Key">83</param>
+                </condition>
+            </conditions>
+            <actions>
+                <action behavior="Platform" id="12" name="Fall through" sid="683921645628802" type="Player" />
+            </actions>
+        </event-block>
+        <event-block sid="304884649492951">
+            <conditions>
+                <condition id="2" name="Key is down" sid="443031714479170" type="Keyboard">
+                    <param id="0" name="Key">68</param>
+                </condition>
+            </conditions>
+            <actions>
+                <action behavior="Platform" id="7" name="Simulate control" sid="488418322987327" type="Player">
+                    <param id="0" name="Control">1</param>
+                </action>
+            </actions>
+        </event-block>
+        <comment>Mirror the player&apos;s image so they appear facing the right way when moving left or right.</comment>
+        <event-block any="1" sid="963368590377624">
+            <conditions>
+                <condition id="0" name="On key pressed" sid="487923071712683" type="Keyboard">
+                    <param id="0" name="Key">37</param>
+                </condition>
+                <condition id="0" name="On key pressed" sid="639286201927735" type="Keyboard">
+                    <param id="0" name="Key">65</param>
+                </condition>
+            </conditions>
+            <actions>
+                <action id="7" name="Set mirrored" sid="227015375230379" type="Player">
+                    <param id="0" name="State">0</param>
+                </action>
+            </actions>
+        </event-block>
+        <event-block any="1" sid="695464497647615">
+            <conditions>
+                <condition id="0" name="On key pressed" sid="793076303294692" type="Keyboard">
+                    <param id="0" name="Key">39</param>
+                </condition>
+                <condition id="0" name="On key pressed" sid="512686964332855" type="Keyboard">
+                    <param id="0" name="Key">68</param>
+                </condition>
+            </conditions>
+            <actions>
+                <action id="7" name="Set mirrored" sid="646098604267458" type="Player">
+                    <param id="0" name="State">1</param>
+                </action>
+            </actions>
+        </event-block>
+        <comment>If the player falls off the bottom of the layout, restart the level.</comment>
+        <event-block sid="426634462128378">
+            <conditions>
+                <condition id="-2" name="Compare Y" sid="961879483572697" type="Player">
+                    <param id="0" name="Comparison">4</param>
+                    <param id="1" name="Y co-ordinate">LayoutHeight</param>
+                </condition>
+            </conditions>
+            <actions>
+                <action id="-26" name="Restart layout" sid="735308872045016" type="System" />
+            </actions>
+        </event-block>
+        <event-block sid="269016763459706">
+            <conditions>
+                <condition id="-18" name="On created" sid="421636116574488" type="cursor" />
+            </conditions>
+            <actions>
+                <action id="1" name="Set cursor from sprite" sid="764259021854547" type="Mouse">
+                    <param id="0" name="Sprite">cursor</param>
+                </action>
+            </actions>
+        </event-block>
+        <event-block sid="383488744580352">
+            <conditions>
+                <condition id="2" name="Mouse button is down" sid="153754465256150" type="Mouse">
+                    <param id="0" name="Mouse button">0</param>
+                </condition>
+            </conditions>
+            <actions>
+                <action id="-5" name="Set width" sid="491347735173778" type="hooker">
+                    <param id="0" name="Width">distance(Player.X, Player.Y, hooker_.X, hooker_.Y)</param>
+                </action>
+                <action id="-22" name="Set angle toward position" sid="386131083920670" type="hooker">
+                    <param id="0" name="X">hooker_.X</param>
+                    <param id="1" name="Y">hooker_.Y</param>
+                </action>
+                <action id="-8" name="Set angle" sid="746560994001660" type="hooker_">
+                    <param id="0" name="Angle">hooker.Angle</param>
+                </action>
+                <action id="-4" name="Set position to another object" sid="131194376612036" type="hooker">
+                    <param id="0" name="Object">Player</param>
+                    <param id="1" name="Image point (optional)">1</param>
+                </action>
+                <action id="-25" name="Move to bottom" sid="631881953536599" type="hooker" />
+            </actions>
+            <sub-events>
+                <event-block sid="214326854646242">
+                    <conditions>
+                        <condition id="-4" name="Trigger once while true" sid="697657318466136" type="System" />
+                    </conditions>
+                    <actions>
+                        <action id="0" name="Spawn another object" sid="946143179584500" type="Player">
+                            <param id="0" name="Object">hooker_</param>
+                            <param id="1" name="Layer">&quot;Game&quot;</param>
+                            <param id="2" name="Image point">1</param>
+                        </action>
+                        <action id="0" name="Spawn another object" sid="879894856488297" type="Player">
+                            <param id="0" name="Object">hooker</param>
+                            <param id="1" name="Layer">&quot;Game&quot;</param>
+                            <param id="2" name="Image point">1</param>
+                        </action>
+                        <action id="-25" name="Move to bottom" sid="597721810591294" type="hooker_" />
+                        <action behavior="Bullet" id="0" name="Set speed" sid="198268348090796" type="hooker_">
+                            <param id="0" name="Speed">2100</param>
+                        </action>
+                        <action id="-22" name="Set angle toward position" sid="444805346565099" type="hooker">
+                            <param id="0" name="X">Player.PlayerMouseX</param>
+                            <param id="1" name="Y">Player.PlayerMouseY</param>
+                        </action>
+                        <action id="-22" name="Set angle toward position" sid="579588880222947" type="hooker_">
+                            <param id="0" name="X">Player.PlayerMouseX</param>
+                            <param id="1" name="Y">Player.PlayerMouseY</param>
+                        </action>
+                    </actions>
+                </event-block>
+                <event-block sid="504142106431317">
+                    <conditions>
+                        <condition id="-8" name="Is boolean instance variable set" sid="556033960391674" type="Player">
+                            <param id="0" name="Instance variable">isHooked</param>
+                        </condition>
+                    </conditions>
+                    <actions>
+                        <action behavior="Physics" id="15" name="Set velocity" sid="824054907865349" type="Player">
+                            <param id="0" name="X component">20</param>
+                            <param id="1" name="Y component">20</param>
+                        </action>
+                    </actions>
+                </event-block>
+                <event-block sid="409466239739886">
+                    <conditions>
+                        <condition id="1" inverted="1" name="Is overlapping another object" sid="407937848044315" type="hooker_">
+                            <param id="0" name="Object">Player</param>
+                        </condition>
+                    </conditions>
+                    <actions>
+                        <action id="11" name="Set collisions enabled" sid="117630629939528" type="hooker_">
+                            <param id="0" name="Collisions">1</param>
+                        </action>
+                    </actions>
+                </event-block>
+            </sub-events>
+        </event-block>
+        <event-block sid="429751512686377">
+            <conditions>
+                <condition id="3" name="On button released" sid="690096209186780" type="Mouse">
+                    <param id="0" name="Mouse button">0</param>
+                </condition>
+            </conditions>
+            <actions>
+                <action id="-9" name="Destroy" sid="539715353057390" type="HookParts" />
+                <action id="-13" name="Set boolean" sid="895679074374281" type="Player">
+                    <param id="0" name="Instance variable">isHooked</param>
+                    <param id="1" name="Value">0</param>
+                </action>
+            </actions>
+        </event-block>
+        <event-block sid="632245990433472">
+            <conditions>
+                <condition id="0" name="On collision with another object" sid="697638580073443" type="hooker_">
+                    <param id="0" name="Object">Hookable</param>
+                </condition>
+                <condition id="-11" name="For Each" sid="436424448471934" type="System">
+                    <param id="0" name="Object">hooker_</param>
+                </condition>
+            </conditions>
+            <actions>
+                <action behavior="Pin" id="0" name="Pin to object" sid="856611589537667" type="hooker_">
+                    <param id="0" name="Pin to">Hookable</param>
+                    <param id="1" name="Mode">0</param>
+                </action>
+                <action id="-14" name="Toggle boolean" sid="229424414463859" type="Player">
+                    <param id="0" name="Instance variable">isHooked</param>
+                </action>
+            </actions>
+        </event-block>
+        <event-block sid="275889541162172">
+            <conditions>
+                <condition id="0" name="On collision with another object" sid="710496586959771" type="Grenade">
+                    <param id="0" name="Object">Hookable</param>
+                </condition>
+            </conditions>
+            <actions>
+                <action id="0" name="Spawn another object" sid="253288501306375" type="Grenade">
+                    <param id="0" name="Object">Explosion</param>
+                    <param id="1" name="Layer">&quot;Game&quot;</param>
+                    <param id="2" name="Image point">0</param>
+                </action>
+                <action id="-9" name="Destroy" sid="702401654188254" type="Grenade" />
+            </actions>
+        </event-block>
+        <event-block sid="850103736343543">
+            <conditions>
+                <condition id="0" name="On click" sid="441461529356175" type="Mouse">
+                    <param id="0" name="Mouse button">2</param>
+                    <param id="1" name="Click type">0</param>
+                </condition>
+            </conditions>
+            <actions>
+                <action id="0" name="Spawn another object" sid="457940816180012" type="Player">
+                    <param id="0" name="Object">Grenade</param>
+                    <param id="1" name="Layer">&quot;Game&quot;</param>
+                    <param id="2" name="Image point">2</param>
+                </action>
+                <action behavior="Physics" id="4" name="Apply impulse towards position" sid="886389841364127" type="Grenade">
+                    <param id="0" name="Impulse">3</param>
+                    <param id="1" name="X">Player.PlayerMouseX</param>
+                    <param id="2" name="Y">Player.PlayerMouseY</param>
+                    <param id="3" name="Image point">1</param>
+                </action>
+            </actions>
+        </event-block>
+        <event-block sid="144868331524468">
+            <conditions>
+                <condition id="-18" name="On created" sid="847110456436108" type="Explosion" />
+                <condition id="-8" name="Compare two values" sid="224995109244784" type="System">
+                    <param id="0" name="First value">distance(Player.PlayerX, Player.PlayerY, Explosion.X, Explosion.Y)</param>
+                    <param id="1" name="Comparison">3</param>
+                    <param id="2" name="Second value">256</param>
+                </condition>
+            </conditions>
+            <actions>
+                <action behavior="Physics" id="3" name="Apply impulse" sid="739723433060410" type="Player">
+                    <param id="0" name="Impulse X">angle(Explosion.X, Explosion.Y, Player.PlayerX, Player.PlayerY)</param>
+                    <param id="1" name="Impulse Y">angle(Explosion.X, Explosion.Y, Player.PlayerX, Player.PlayerY)</param>
+                    <param id="2" name="Image point">1</param>
+                </action>
+            </actions>
+        </event-block>
+    </events>
+</c2eventsheet>
