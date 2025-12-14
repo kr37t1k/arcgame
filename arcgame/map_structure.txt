@@ -1,0 +1,15 @@
+arcgame/
+├── data/
+│   └── maps/                 # Exact replica of DDNet map system
+│       ├── *.map             # Map files
+│       ├── downloaded/       # Downloaded maps from servers
+│       ├── community/        # Community maps
+│       ├── official/         # Official DDNet maps
+│       └── campaigns/        # Map campaigns
+├── mapres/                   # Map resources (tilesets, entities)
+│   ├── grass.png
+│   ├── castle.png
+│   └── jungle.png
+└── mapicons/                 # Map preview icons
+    ├── castle.png
+    └── jungle.png
